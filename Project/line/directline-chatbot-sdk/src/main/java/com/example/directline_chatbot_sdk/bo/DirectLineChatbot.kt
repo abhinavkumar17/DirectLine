@@ -149,7 +149,7 @@ class DirectLineChatbot(val secret: String)
 
             override fun onMessage(message: String?)
             {
-                log("MESSAGE RECEIVED : ${message}")
+                log("MESSAGE RECEIVED : $message")
                 val messageReceived = GSON.fromJson(message, MessageReceived::class.java)
                 messageReceived?.watermark?.let {
                     callback?.onMessageReceived(messageReceived.activities[0].text)

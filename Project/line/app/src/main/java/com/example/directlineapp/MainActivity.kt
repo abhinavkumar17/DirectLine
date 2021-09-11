@@ -12,8 +12,8 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        val chatbot = DirectLineChatbot("lni0wJVLkcI.I_w4GeNIBDaDoZ-7bAFzwU3vJYWpNAd7lhaJMegiwqo")
-        //chatbot.debug(true)
+        val chatbot = DirectLineChatbot("0yBj8sJVI-M.I5KNG4i8azR9TSnxKD7XPoX0JrKPV1QcyuN9qmINUCo")
+       // chatbot.debug(true)
         //chatbot.user("David Fournier")
 
 
@@ -24,6 +24,8 @@ class MainActivity : AppCompatActivity() {
         {
             override fun onStarted()
             {
+
+                Log.d("TAG", "onStarted: ")
                 chatbot.send("safe zone")
             }
 
