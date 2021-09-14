@@ -162,6 +162,6 @@ class DirectLineChatbot(val secret: String)
                 callback?.onError(ex)
             }
         }
-        webSocket?.connect()
+        webSocket?.connect()//  for difference between web socket and http refer https://developerinsider.co/difference-between-http-and-http-2-0-websocket/
     }
 }
