@@ -48,9 +48,20 @@ class BottomNavigationActivity : AppCompatActivity() {
         setupNavigationActions()
 
         setUpOnClickListeners()
+        setupViewAnimations()
 
         tts = TextToSpeech(applicationContext) {}
         Log.d("Fragment Attached", "onCreate:${callingActivity?.className}")
+    }
+
+    private fun setupViewAnimations() {
+
+        binding.waveThree.addDefaultWaves(
+            1,
+            1
+        ) // or call WaveView#addWaveData to add wave data as you like
+        binding.waveThree.visibility = View.GONE
+
     }
 
     private fun setupSpeechViewModel() {
@@ -113,6 +124,8 @@ class BottomNavigationActivity : AppCompatActivity() {
         if (uiOutput == null) return
 
         if (uiOutput.isListening) {
+            binding.waveThree.visibility = View.VISIBLE
+            binding.waveThree.startAnimation()
             binding.editTextVoiceInput.animate()
                 .alpha(1f)
                 .setDuration(500)
@@ -128,6 +141,8 @@ class BottomNavigationActivity : AppCompatActivity() {
                 )
             )
         } else {
+            binding.waveThree.visibility = View.GONE
+
             binding.floatingActionButton.setImageDrawable(
                 ContextCompat.getDrawable(
                     applicationContext,
@@ -168,6 +183,8 @@ class BottomNavigationActivity : AppCompatActivity() {
                     }
 
                     override fun onMessageReceived(message: String) {
+                        binding.waveThree.visibility = View.GONE
+
                         Log.d("CHATBOT", message)
                         if (tts.isSpeaking) {
                             tts.stop()
@@ -198,6 +215,7 @@ class BottomNavigationActivity : AppCompatActivity() {
     }
 
     private fun startTextToSpeech(message: String) {
+        binding.waveThree.visibility = View.GONE
         tts = TextToSpeech(applicationContext) {
             if (it == TextToSpeech.SUCCESS) {
                 tts.language = Locale.US
