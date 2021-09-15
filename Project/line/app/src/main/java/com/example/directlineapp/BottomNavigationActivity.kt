@@ -156,7 +156,7 @@ class BottomNavigationActivity : AppCompatActivity() {
 
                 binding.editTextVoiceInput.text = uiOutput.spokenText
                 sendMessage(binding.editTextVoiceInput.text as String)
-                Log.d(TAG, "CHATBOT msg sent: ${uiOutput.spokenText }")
+                Log.d(TAG, "CHATBOT msg sent: ${uiOutput.spokenText}")
                 uiOutput.spokenText = ""
 
             }
@@ -203,7 +203,13 @@ class BottomNavigationActivity : AppCompatActivity() {
             if (it == TextToSpeech.SUCCESS) {
                 tts.language = Locale.US
                 tts.setPitch(1.5F)
-                tts.speak(message, TextToSpeech.QUEUE_ADD, null, "")
+                if (message == "Hello and welcome!") {
+                   // tts.speak("", TextToSpeech.QUEUE_ADD, null, "")
+
+                } else {
+                    tts.speak(message, TextToSpeech.QUEUE_ADD, null, "")
+
+                }
 
             }
         }
@@ -213,6 +219,7 @@ class BottomNavigationActivity : AppCompatActivity() {
             }
 
             override fun onDone(p0: String?) {
+                Log.d(TAG, "onDone:$p0")
                 Handler(Looper.getMainLooper()).post {
                     if (!tts.isSpeaking && !speechRecognizerViewModel.isListening) {
                         speechRecognizerViewModel.startListening()
