@@ -1,8 +1,6 @@
 package com.example.directlineapp
 
 import android.Manifest
-import android.animation.Animator
-import android.animation.AnimatorListenerAdapter
 import android.content.pm.PackageManager
 import android.os.Bundle
 import android.os.Handler
@@ -33,6 +31,8 @@ class BottomNavigationActivity : AppCompatActivity() {
     private lateinit var speechRecognizerViewModel: SpeechRecognizerViewModel
     private val REQUEST_RECORD_AUDIO_PERMISSION = 200
     private val TAG = "BottomNavigationActivity"
+    val chatbot =
+        DirectLineChatbot("hSNvCahpROY.hQTSFq26wnc31Oj4i6h4SrpRxCJq65g46Nf71eu8z1Q")
 
     private val permissions = arrayOf(Manifest.permission.RECORD_AUDIO)
     lateinit var tts: TextToSpeech
@@ -123,94 +123,77 @@ class BottomNavigationActivity : AppCompatActivity() {
     private fun render(uiOutput: SpeechRecognizerViewModel.ViewState?) {
         if (uiOutput == null) return
 
-        if (uiOutput.isListening) {
-            binding.waveThree.visibility = View.VISIBLE
-            binding.waveThree.startAnimation()
-            binding.editTextVoiceInput.animate()
-                .alpha(1f)
-                .setDuration(500)
-                .setListener(object : AnimatorListenerAdapter() {
-                    override fun onAnimationEnd(animation: Animator) {
-                        binding.editTextVoiceInput.visibility = View.VISIBLE
-                    }
-                })
-            binding.floatingActionButton.setImageDrawable(
-                ContextCompat.getDrawable(
-                    applicationContext,
-                    R.drawable.ic_baseline_stop_24
-                )
-            )
-        } else {
-            binding.waveThree.visibility = View.GONE
+        if (tts.isSpeaking) {
+            tts.stop()
+            startVoiceRecording(uiOutput)
 
-            binding.floatingActionButton.setImageDrawable(
-                ContextCompat.getDrawable(
-                    applicationContext,
-                    android.R.drawable.ic_btn_speak_now
+        } else {
+            startVoiceRecording(uiOutput)
+        }
+    }
+
+    private fun startVoiceRecording(uiOutput: SpeechRecognizerViewModel.ViewState?) {
+        if (uiOutput != null) {
+            if (uiOutput.isListening) {
+                binding.waveThree.visibility = View.VISIBLE
+                binding.waveThree.startAnimation()
+                binding.floatingActionButton.setImageDrawable(
+                    ContextCompat.getDrawable(
+                        applicationContext,
+                        R.drawable.ic_baseline_stop_24
+                    )
                 )
-            )
-            if (binding.editTextVoiceInput.text != "") {
-                Log.d(TAG, "msg sent: ${binding.editTextVoiceInput.text as String}")
-                sendMessage(binding.editTextVoiceInput.text as String)
-                binding.editTextVoiceInput.text = ""
-                uiOutput.spokenText = ""
             } else {
-                if (uiOutput.spokenText != ("")) {
-                    Log.d(TAG, "msg speak: ${uiOutput.spokenText}")
-                    binding.editTextVoiceInput.text = uiOutput.spokenText
-                }
+                binding.waveThree.visibility = View.GONE
+                binding.floatingActionButton.setImageDrawable(
+                    ContextCompat.getDrawable(
+                        applicationContext,
+                        android.R.drawable.ic_btn_speak_now
+                    )
+                )
+
+
+
+                binding.editTextVoiceInput.text = uiOutput.spokenText
+                sendMessage(binding.editTextVoiceInput.text as String)
+                Log.d(TAG, "CHATBOT msg sent: ${uiOutput.spokenText }")
+                uiOutput.spokenText = ""
+
             }
         }
-
     }
 
 
     private fun sendMessage(userMessage: String) {
         if (userMessage.isNotBlank() || userMessage.isNotEmpty() || userMessage != "") {
-            val chatbot =
-                DirectLineChatbot("0yBj8sJVI-M.I5KNG4i8azR9TSnxKD7XPoX0JrKPV1QcyuN9qmINUCo")
-
-
             chatbot.user = "Abhinav"
             chatbot.debug = true
 
-            if (userMessage != "") {
-                chatbot.start(callback = object : DirectLineChatbot.Callback {
-                    override fun onStarted() {
+            chatbot.start(callback = object : DirectLineChatbot.Callback {
+                override fun onStarted() {
 
-                        Log.d("TAG", "onStarted: ")
-                        chatbot.send(userMessage)
+                    Log.d("CHATBOT", "onStarted: ")
+                    chatbot.send(userMessage)
+                }
+
+                override fun onMessageReceived(message: String) {
+                    binding.waveThree.visibility = View.GONE
+                    Log.d("CHATBOT", message)
+                    if (tts.isSpeaking) {
+                        tts.stop()
+                        startTextToSpeech(message)
+                        binding.editTextVoiceInput.text = ""
+                    } else {
+                        startTextToSpeech(message)
+                        binding.editTextVoiceInput.text = ""
                     }
 
-                    override fun onMessageReceived(message: String) {
-                        binding.waveThree.visibility = View.GONE
+                }
 
-                        Log.d("CHATBOT", message)
-                        if (tts.isSpeaking) {
-                            tts.stop()
-                            startTextToSpeech(message)
-                            binding.editTextVoiceInput.text = ""
-                        } else {
-                            startTextToSpeech(message)
-                            binding.editTextVoiceInput.text = ""
-                        }
-
-                    }
-
-                    override fun onError(ex: Exception?) {
-                        Log.d("CHATBOT Error", ex.toString())
-                    }
-                })
-
-
-            }
-            /*  speechRecognizerViewModel.getBotResponseFromRepository(userMessage)!!
-                  .observeOnce(this) { botResponse ->
-                      Log.d(TAG, "msg response: $botResponse")
-
-
-                  }*/
-
+                override fun onError(ex: Exception?) {
+                    Log.d("CHATBOT Error", ex.toString())
+                }
+            })
         }
     }
 
