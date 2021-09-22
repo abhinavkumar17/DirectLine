@@ -82,6 +82,9 @@ class CustomBottomSheetDialogFragment : DialogFragment(), DialogInterface.OnDism
     private fun setupTextWatcher(view: View) {
         view.edittext_chatbox.addTextChangedListener(object : TextWatcher {
             override fun onTextChanged(cs: CharSequence, s: Int, b: Int, c: Int) {
+                if(tts.isSpeaking){
+                    tts.stop()
+                }
                 Log.i("Key:", cs.toString())
             }
 
@@ -94,7 +97,7 @@ class CustomBottomSheetDialogFragment : DialogFragment(), DialogInterface.OnDism
 
     private fun setupViewAnimations() {
         wave_three.addDefaultWaves(
-            1,
+            2,
             1
         ) // or call WaveView#addWaveData to add wave data as you like
         wave_three.visibility = View.GONE
@@ -130,7 +133,7 @@ class CustomBottomSheetDialogFragment : DialogFragment(), DialogInterface.OnDism
     @RequiresApi(Build.VERSION_CODES.N)
     private fun setupClickListeners(view: View) {
         view.send_button.setOnClickListener {
-            if (send_button.isEnabled) {
+            if (send_button.isEnabled && send_button_text.isEnabled) {
                 if (tts.isSpeaking) {
                     tts.stop()
                     startRecording()
@@ -141,7 +144,7 @@ class CustomBottomSheetDialogFragment : DialogFragment(), DialogInterface.OnDism
             }
         }
         send_button_text.setOnClickListener {
-            if (send_button.isEnabled) {
+            if (send_button.isEnabled && send_button_text.isEnabled) {
                 if (tts.isSpeaking) {
                     tts.stop()
                     sendTextMessage(edittext_chatbox.text.toString())
@@ -184,6 +187,165 @@ class CustomBottomSheetDialogFragment : DialogFragment(), DialogInterface.OnDism
         startSpeechToText()
     }
 
+
+    private fun checkAudioPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {  // M = 23
+            if (ContextCompat.checkSelfPermission(
+                    requireContext(),
+                    "android.permission.RECORD_AUDIO"
+                ) != PackageManager.PERMISSION_GRANTED
+            ) {
+                val intent = Intent(
+                    Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
+                    Uri.parse("package:com.example.directlineapp")
+                )
+                startActivity(intent)
+                Toast.makeText(requireContext(), "Allow Microphone Permission", Toast.LENGTH_SHORT)
+                    .show()
+            }
+        }
+    }
+
+    @RequiresApi(Build.VERSION_CODES.N)
+    private fun initChat(msg: String?, date: Date) {
+        sendTextMessage(userMessage = msg.toString())
+    }
+
+    private fun sendTextMessage(userMessage: String) {
+
+        chatbot.user = "Abhinav"
+        chatbot.debug = true
+        chatbot.start(callback = object : DirectLineChatbot.Callback {
+            override fun onStarted() {
+                Log.d("CHATBOT", "onStarted: ")
+
+                if (userMessage.trim().isEmpty()) {
+                    Toast.makeText(
+                        requireContext(),
+                        "Please enter your query",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                } else {
+                    chatbot.send(userMessage)
+                    val message = UserMessage()
+                    message.UserMessage("User", userMessage)
+                    activity?.runOnUiThread(Runnable {
+                        //on main thread
+                        showTextView(userMessage, USER, date.toString())
+                    })
+
+                }
+            }
+
+            override fun onMessageReceived(message: String) {
+                if (message.isNotEmpty()) {
+                    if (tts.isSpeaking) {
+                        tts.stop()
+                        val botMessage = "Sorry didn't understand"
+                        addBotMessage(botMessage)
+                    } else {
+                        addBotMessage(message)
+                    }
+                }
+            }
+
+            override fun onError(ex: Exception?) {
+                Log.d("CHATBOT Error", ex.toString())
+                activity?.runOnUiThread(Runnable {
+                    //on main thread
+                    Toast.makeText(
+                        requireContext(),
+                        "Please enter your query",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                })
+
+            }
+        })
+
+    }
+
+    private fun sendVoiceMessage(userMessage: String) {
+        chatbot.user = "Abhinav"
+        chatbot.debug = true
+        chatbot.start(callback = object : DirectLineChatbot.Callback {
+            override fun onStarted() {
+                Log.d("CHATBOT", "onStarted: ")
+                chatbot.send(userMessage)
+            }
+
+            override fun onMessageReceived(message: String) {
+                if (message.isNotEmpty()) {
+                    if (tts.isSpeaking) {
+                        tts.stop()
+                        val botMessage = "Sorry didn't understand"
+                        startTextToSpeech(botMessage)
+                        edittext_chatbox.text = "".toEditable()
+                    } else {
+                        startTextToSpeech(message)
+                        edittext_chatbox.text = "".toEditable()
+                    }
+                } else {
+                    startTextToSpeech(message)
+                    edittext_chatbox.text = "".toEditable()
+                }
+            }
+
+            override fun onError(ex: Exception?) {
+                Log.d("CHATBOT Error", ex.toString())
+                val botMessage = "Check your network connection"
+                showTextView(botMessage, BOT, date.toString())
+                startTextToSpeech(botMessage)
+            }
+        })
+
+    }
+
+    private fun addBotMessage(botMessage: String) {
+        if (botMessage == "Hello and welcome!") {
+            // tts.speak("", TextToSpeech.QUEUE_ADD, null, "")
+        } else {
+            activity?.runOnUiThread(Runnable {
+
+                showTextView(botMessage, BOT, date.toString())
+            })
+            edittext_chatbox.text = "".toEditable()
+
+        }
+    }
+
+    private fun startTextToSpeech(message: String) {
+        wave_three.visibility = View.GONE
+        tts = TextToSpeech(requireContext()) {
+            if (it == TextToSpeech.SUCCESS) {
+                tts.language = Locale.US
+                tts.setPitch(1.5F)
+                if (message == "Hello and welcome!") {
+                    // tts.speak("", TextToSpeech.QUEUE_ADD, null, "")
+                } else {
+                    tts.speak(message, TextToSpeech.QUEUE_ADD, null, "")
+                }
+            }
+        }
+        tts.setOnUtteranceProgressListener(object : UtteranceProgressListener() {
+            override fun onStart(p0: String?) {
+            }
+
+            override fun onDone(p0: String?) {
+                Log.d(TAG, "onDone:$p0")
+                Handler(Looper.getMainLooper()).post {
+                    startRecording()
+                    Toast.makeText(requireContext(), "Finished speaking.", Toast.LENGTH_LONG)
+                        .show()
+                }
+            }
+
+            override fun onError(p0: String?) {
+            }
+        })
+
+    }
+
     private fun startSpeechToText() {
         val speechRecognizer = SpeechRecognizer.createSpeechRecognizer(requireContext())
         val speechRecognizerIntent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH)
@@ -223,14 +385,12 @@ class CustomBottomSheetDialogFragment : DialogFragment(), DialogInterface.OnDism
             override fun onResults(bundle: Bundle) {
                 val result = bundle.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)
                 if (result != null) {
-                    // attaching the output
-                    // to our textview
-                    view?.edittext_chatbox?.text = result[0].toEditable()
+
                     if (result[0].toString().contains("close")) {
                         view?.chat_layout?.removeAllViews()
                         dismiss()
                     } else {
-                        sendVoiceMessage(view?.edittext_chatbox?.text.toString().trim())
+                        sendVoiceMessage(result[0].toString())
                     }
 
                 }
@@ -241,175 +401,6 @@ class CustomBottomSheetDialogFragment : DialogFragment(), DialogInterface.OnDism
             }
         })
         speechRecognizer.startListening(speechRecognizerIntent)
-    }
-
-    private fun checkAudioPermission() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {  // M = 23
-            if (ContextCompat.checkSelfPermission(
-                    requireContext(),
-                    "android.permission.RECORD_AUDIO"
-                ) != PackageManager.PERMISSION_GRANTED
-            ) {
-                val intent = Intent(
-                    Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
-                    Uri.parse("package:com.example.directlineapp")
-                )
-                startActivity(intent)
-                Toast.makeText(requireContext(), "Allow Microphone Permission", Toast.LENGTH_SHORT)
-                    .show()
-            }
-        }
-    }
-
-    @RequiresApi(Build.VERSION_CODES.N)
-    private fun initChat(msg: String?, date: Date) {
-        sendTextMessage(userMessage = msg.toString())
-    }
-
-    private fun sendTextMessage(userMessage: String) {
-
-        chatbot.user = "Abhinav"
-        chatbot.debug = true
-        chatbot.start(callback = object : DirectLineChatbot.Callback {
-            override fun onStarted() {
-                Log.d("CHATBOT", "onStarted: ")
-                chatbot.send(userMessage)
-                val message = UserMessage()
-                message.UserMessage("User", userMessage)
-                if (userMessage.trim().isEmpty()) {
-                    Toast.makeText(
-                        requireContext(),
-                        "Please enter your query",
-                        Toast.LENGTH_SHORT
-                    ).show()
-                } else {
-                    activity?.runOnUiThread(Runnable {
-                        //on main thread
-                        showTextView(userMessage, USER, date.toString())
-                    })
-
-                }
-            }
-
-            override fun onMessageReceived(message: String) {
-                if (message.isNotEmpty()) {
-                    if (tts.isSpeaking) {
-                        tts.stop()
-                        val botMessage = "Sorry didn't understand"
-                        addBotMessage(botMessage)
-                    } else {
-                        addBotMessage(message)
-                    }
-                } else {
-                    addBotMessage(message)
-                }
-            }
-
-            override fun onError(ex: Exception?) {
-                Log.d("CHATBOT Error", ex.toString())
-                val botMessage = "Check your network connection"
-                showTextView(botMessage, BOT, date.toString())
-                // startTextToSpeech(botMessage)
-            }
-        })
-
-    }
-
-    private fun sendVoiceMessage(userMessage: String) {
-        chatbot.user = "Abhinav"
-        chatbot.debug = true
-        chatbot.start(callback = object : DirectLineChatbot.Callback {
-            override fun onStarted() {
-                Log.d("CHATBOT", "onStarted: ")
-                chatbot.send(userMessage)
-                /*  val message = UserMessage()
-                  message.UserMessage("User", userMessage)
-                  if (userMessage.trim().isEmpty()) {
-                      Toast.makeText(
-                          requireContext(),
-                          "Please enter your query",
-                          Toast.LENGTH_SHORT
-                      ).show()
-                  } else {
-                      activity?.runOnUiThread(Runnable {
-                          //on main thread
-                              showTextView(userMessage, USER, date.toString())
-                      })
-
-                  }*/
-            }
-
-            override fun onMessageReceived(message: String) {
-                if (message.isNotEmpty()) {
-                    if (tts.isSpeaking) {
-                        tts.stop()
-                        val botMessage = "Sorry didn't understand"
-                        startTextToSpeech(botMessage)
-                        edittext_chatbox.text = "".toEditable()
-                    } else {
-                        startTextToSpeech(message)
-                        edittext_chatbox.text = "".toEditable()
-                    }
-                } else {
-                    startTextToSpeech(message)
-                    edittext_chatbox.text = "".toEditable()
-                }
-            }
-
-            override fun onError(ex: Exception?) {
-                Log.d("CHATBOT Error", ex.toString())
-                val botMessage = "Check your network connection"
-                showTextView(botMessage, BOT, date.toString())
-                startTextToSpeech(botMessage)
-            }
-        })
-
-    }
-
-    private fun addBotMessage(botMessage: String) {
-        if (botMessage == "Hello and welcome!") {
-            // tts.speak("", TextToSpeech.QUEUE_ADD, null, "")
-        } else {
-            activity?.runOnUiThread(Runnable {
-
-                showTextView(botMessage, BOT, date.toString())
-            })
-            //startTextToSpeech(botMessage)
-            edittext_chatbox.text = "".toEditable()
-
-        }
-    }
-
-    private fun startTextToSpeech(message: String) {
-        wave_three.visibility = View.GONE
-        tts = TextToSpeech(requireContext()) {
-            if (it == TextToSpeech.SUCCESS) {
-                tts.language = Locale.US
-                tts.setPitch(1.5F)
-                if (message == "Hello and welcome!") {
-                    // tts.speak("", TextToSpeech.QUEUE_ADD, null, "")
-                } else {
-                    tts.speak(message, TextToSpeech.QUEUE_ADD, null, "")
-                }
-            }
-        }
-        tts.setOnUtteranceProgressListener(object : UtteranceProgressListener() {
-            override fun onStart(p0: String?) {
-            }
-
-            override fun onDone(p0: String?) {
-                Log.d(TAG, "onDone:$p0")
-                Handler(Looper.getMainLooper()).post {
-                    startRecording()
-                    Toast.makeText(requireContext(), "Finished speaking.", Toast.LENGTH_LONG)
-                        .show()
-                }
-            }
-
-            override fun onError(p0: String?) {
-            }
-        })
-
     }
 
     @RequiresApi(Build.VERSION_CODES.N)
@@ -431,7 +422,6 @@ class CustomBottomSheetDialogFragment : DialogFragment(), DialogInterface.OnDism
         messageTextView?.text = message
         frameLayout?.requestFocus()
         view?.edittext_chatbox?.text = "".toEditable()
-        view?.edittext_chatbox?.requestFocus()
         val currentDateTime = Date(System.currentTimeMillis())
         val dateNew = Date(date)
         val dateFormat = SimpleDateFormat("dd-MM-yy", Locale.ENGLISH)
@@ -464,6 +454,7 @@ class CustomBottomSheetDialogFragment : DialogFragment(), DialogInterface.OnDism
     private fun getBotLayout(): FrameLayout? {
         val inflater: LayoutInflater = LayoutInflater.from(requireContext())
         view?.send_button?.isEnabled = true
+        view?.send_button_text?.isEnabled = true
         view?.imageView_arrow_up?.visibility = View.VISIBLE
         view?.imageView_arrow_up?.isEnabled = true
         return inflater.inflate(R.layout.bot_message_box, null) as FrameLayout?
