@@ -23,9 +23,11 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
-import android.widget.*
+import android.widget.FrameLayout
+import android.widget.ScrollView
+import android.widget.TextView
+import android.widget.Toast
 import androidx.annotation.RequiresApi
-import androidx.core.content.ContentProviderCompat.requireContext
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.DialogFragment
 import com.example.directline_chatbot_sdk.bo.DirectLineChatbot
@@ -40,7 +42,6 @@ class CustomBottomSheetDialogFragment : DialogFragment(), DialogInterface.OnDism
     val chatbot =
         DirectLineChatbot("hSNvCahpROY.hQTSFq26wnc31Oj4i6h4SrpRxCJq65g46Nf71eu8z1Q")
     lateinit var tts: TextToSpeech
-    var isTyping = false
 
     companion object {
         const val TAG = "SimpleDialog"
@@ -128,11 +129,26 @@ class CustomBottomSheetDialogFragment : DialogFragment(), DialogInterface.OnDism
 
     @RequiresApi(Build.VERSION_CODES.N)
     private fun setupClickListeners(view: View) {
-        view.send_button.apply {
-            setOnClickListener(micClickListener)
+        view.send_button.setOnClickListener {
+            if (send_button.isEnabled) {
+                if (tts.isSpeaking) {
+                    tts.stop()
+                    startRecording()
+                } else {
+                    startRecording()
+                }
+
+            }
         }
         send_button_text.setOnClickListener {
-            sendMessage(edittext_chatbox.text.toString())
+            if (send_button.isEnabled) {
+                if (tts.isSpeaking) {
+                    tts.stop()
+                    sendTextMessage(edittext_chatbox.text.toString())
+                } else {
+                    sendTextMessage(edittext_chatbox.text.toString())
+                }
+            }
         }
         view.imageView_arrow_up.setOnClickListener {
             if (view.imageView_arrow_up.isEnabled) {
@@ -145,18 +161,6 @@ class CustomBottomSheetDialogFragment : DialogFragment(), DialogInterface.OnDism
             }
         }
         view.chatScrollView.post { view.chatScrollView.fullScroll(ScrollView.FOCUS_DOWN) }
-    }
-
-    private val micClickListener = View.OnClickListener {
-        if (send_button.isEnabled) {
-            if (tts.isSpeaking) {
-                tts.stop()
-                startRecording()
-            } else {
-                startRecording()
-            }
-
-        }
     }
 
     private fun startRecording() {
@@ -226,7 +230,7 @@ class CustomBottomSheetDialogFragment : DialogFragment(), DialogInterface.OnDism
                         view?.chat_layout?.removeAllViews()
                         dismiss()
                     } else {
-                        sendMessage(view?.edittext_chatbox?.text.toString().trim())
+                        sendVoiceMessage(view?.edittext_chatbox?.text.toString().trim())
                     }
 
                 }
@@ -259,10 +263,11 @@ class CustomBottomSheetDialogFragment : DialogFragment(), DialogInterface.OnDism
 
     @RequiresApi(Build.VERSION_CODES.N)
     private fun initChat(msg: String?, date: Date) {
-        sendMessage(userMessage = msg.toString())
+        sendTextMessage(userMessage = msg.toString())
     }
 
-    private fun sendMessage(userMessage: String) {
+    private fun sendTextMessage(userMessage: String) {
+
         chatbot.user = "Abhinav"
         chatbot.debug = true
         chatbot.start(callback = object : DirectLineChatbot.Callback {
@@ -304,6 +309,57 @@ class CustomBottomSheetDialogFragment : DialogFragment(), DialogInterface.OnDism
                 Log.d("CHATBOT Error", ex.toString())
                 val botMessage = "Check your network connection"
                 showTextView(botMessage, BOT, date.toString())
+                // startTextToSpeech(botMessage)
+            }
+        })
+
+    }
+
+    private fun sendVoiceMessage(userMessage: String) {
+        chatbot.user = "Abhinav"
+        chatbot.debug = true
+        chatbot.start(callback = object : DirectLineChatbot.Callback {
+            override fun onStarted() {
+                Log.d("CHATBOT", "onStarted: ")
+                chatbot.send(userMessage)
+                /*  val message = UserMessage()
+                  message.UserMessage("User", userMessage)
+                  if (userMessage.trim().isEmpty()) {
+                      Toast.makeText(
+                          requireContext(),
+                          "Please enter your query",
+                          Toast.LENGTH_SHORT
+                      ).show()
+                  } else {
+                      activity?.runOnUiThread(Runnable {
+                          //on main thread
+                              showTextView(userMessage, USER, date.toString())
+                      })
+
+                  }*/
+            }
+
+            override fun onMessageReceived(message: String) {
+                if (message.isNotEmpty()) {
+                    if (tts.isSpeaking) {
+                        tts.stop()
+                        val botMessage = "Sorry didn't understand"
+                        startTextToSpeech(botMessage)
+                        edittext_chatbox.text = "".toEditable()
+                    } else {
+                        startTextToSpeech(message)
+                        edittext_chatbox.text = "".toEditable()
+                    }
+                } else {
+                    startTextToSpeech(message)
+                    edittext_chatbox.text = "".toEditable()
+                }
+            }
+
+            override fun onError(ex: Exception?) {
+                Log.d("CHATBOT Error", ex.toString())
+                val botMessage = "Check your network connection"
+                showTextView(botMessage, BOT, date.toString())
                 startTextToSpeech(botMessage)
             }
         })
@@ -315,11 +371,12 @@ class CustomBottomSheetDialogFragment : DialogFragment(), DialogInterface.OnDism
             // tts.speak("", TextToSpeech.QUEUE_ADD, null, "")
         } else {
             activity?.runOnUiThread(Runnable {
-                //on main thread
+
                 showTextView(botMessage, BOT, date.toString())
             })
-            startTextToSpeech(botMessage)
+            //startTextToSpeech(botMessage)
             edittext_chatbox.text = "".toEditable()
+
         }
     }
 
@@ -339,6 +396,7 @@ class CustomBottomSheetDialogFragment : DialogFragment(), DialogInterface.OnDism
         tts.setOnUtteranceProgressListener(object : UtteranceProgressListener() {
             override fun onStart(p0: String?) {
             }
+
             override fun onDone(p0: String?) {
                 Log.d(TAG, "onDone:$p0")
                 Handler(Looper.getMainLooper()).post {
@@ -347,89 +405,91 @@ class CustomBottomSheetDialogFragment : DialogFragment(), DialogInterface.OnDism
                         .show()
                 }
             }
+
             override fun onError(p0: String?) {
             }
         })
 
     }
 
-@RequiresApi(Build.VERSION_CODES.N)
-fun showTextView(message: String, type: Int, date: String) {
-    frameLayout = when (type) {
-        USER -> {
-            getUserLayout()
+    @RequiresApi(Build.VERSION_CODES.N)
+    fun showTextView(message: String, type: Int, date: String) {
+        frameLayout = when (type) {
+            USER -> {
+                getUserLayout()
+            }
+            BOT -> {
+                getBotLayout()
+            }
+            else -> {
+                getBotLayout()
+            }
         }
-        BOT -> {
-            getBotLayout()
+        frameLayout?.isFocusableInTouchMode = true
+        view?.chat_layout?.addView(frameLayout)
+        val messageTextView = frameLayout?.findViewById<TextView>(R.id.chat_msg)
+        messageTextView?.text = message
+        frameLayout?.requestFocus()
+        view?.edittext_chatbox?.text = "".toEditable()
+        view?.edittext_chatbox?.requestFocus()
+        val currentDateTime = Date(System.currentTimeMillis())
+        val dateNew = Date(date)
+        val dateFormat = SimpleDateFormat("dd-MM-yy", Locale.ENGLISH)
+        val currentDate = dateFormat.format(currentDateTime)
+        val providedDate = dateFormat.format(dateNew)
+        var time = ""
+        if (currentDate.equals(providedDate)) {
+            val timeFormat = SimpleDateFormat(
+                "hh:mm aa",
+                Locale.ENGLISH
+            )
+            time = timeFormat.format(dateNew)
+        } else {
+            val dateTimeFormat = SimpleDateFormat(
+                "dd-MM-yy hh:mm aa",
+                Locale.ENGLISH
+            )
+            time = dateTimeFormat.format(dateNew)
         }
-        else -> {
-            getBotLayout()
+        val timeTextView = frameLayout?.findViewById<TextView>(R.id.message_time)
+        timeTextView?.text = time
+
+    }
+
+    private fun getUserLayout(): FrameLayout? {
+        val inflater: LayoutInflater = LayoutInflater.from(requireContext())
+        return inflater.inflate(R.layout.user_message_box, null) as FrameLayout?
+    }
+
+    private fun getBotLayout(): FrameLayout? {
+        val inflater: LayoutInflater = LayoutInflater.from(requireContext())
+        view?.send_button?.isEnabled = true
+        view?.imageView_arrow_up?.visibility = View.VISIBLE
+        view?.imageView_arrow_up?.isEnabled = true
+        return inflater.inflate(R.layout.bot_message_box, null) as FrameLayout?
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        if (tts.isSpeaking) {
+            tts.stop()
+            tts.shutdown()
         }
     }
-    frameLayout?.isFocusableInTouchMode = true
-    view?.chat_layout?.addView(frameLayout)
-    val messageTextView = frameLayout?.findViewById<TextView>(R.id.chat_msg)
-    messageTextView?.setText(message)
-    frameLayout?.requestFocus()
-    view?.edittext_chatbox?.text = "".toEditable()
-    view?.edittext_chatbox?.requestFocus()
-    val currentDateTime = Date(System.currentTimeMillis())
-    val dateNew = Date(date)
-    val dateFormat = SimpleDateFormat("dd-MM-yy", Locale.ENGLISH)
-    val currentDate = dateFormat.format(currentDateTime)
-    val providedDate = dateFormat.format(dateNew)
-    var time = ""
-    if (currentDate.equals(providedDate)) {
-        val timeFormat = SimpleDateFormat(
-            "hh:mm aa",
-            Locale.ENGLISH
-        )
-        time = timeFormat.format(dateNew)
-    } else {
-        val dateTimeFormat = SimpleDateFormat(
-            "dd-MM-yy hh:mm aa",
-            Locale.ENGLISH
-        )
-        time = dateTimeFormat.format(dateNew)
+
+    override fun onPause() {
+        super.onPause()
+        if (tts.isSpeaking) {
+            tts.stop()
+            tts.shutdown()
+        }
     }
-    val timeTextView = frameLayout?.findViewById<TextView>(R.id.message_time)
-    timeTextView?.text = time
 
-}
-
-private fun getUserLayout(): FrameLayout? {
-    val inflater: LayoutInflater = LayoutInflater.from(requireContext())
-    return inflater.inflate(R.layout.user_message_box, null) as FrameLayout?
-}
-
-private fun getBotLayout(): FrameLayout? {
-    val inflater: LayoutInflater = LayoutInflater.from(requireContext())
-    view?.send_button?.isEnabled = true
-    view?.imageView_arrow_up?.visibility = View.VISIBLE
-    view?.imageView_arrow_up?.isEnabled = true
-    return inflater.inflate(R.layout.bot_message_box, null) as FrameLayout?
-}
-
-override fun onDestroy() {
-    super.onDestroy()
-    if (tts.isSpeaking) {
-        tts.stop()
-        tts.shutdown()
+    override fun onDismiss(dialog: DialogInterface) {
+        super.onDismiss(dialog)
+        view?.chat_layout?.removeAllViews()
     }
-}
-
-override fun onPause() {
-    super.onPause()
-    if (tts.isSpeaking) {
-        tts.stop()
-        tts.shutdown()
-    }
-}
-
-override fun onDismiss(dialog: DialogInterface) {
-    super.onDismiss(dialog)
-    view?.chat_layout?.removeAllViews()
-}
 
 }
+
 fun String.toEditable(): Editable = Editable.Factory.getInstance().newEditable(this)
