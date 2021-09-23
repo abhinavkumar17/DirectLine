@@ -23,18 +23,19 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
-import android.widget.FrameLayout
-import android.widget.ScrollView
-import android.widget.TextView
-import android.widget.Toast
+import android.widget.*
 import androidx.annotation.RequiresApi
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.DialogFragment
 import com.example.directline_chatbot_sdk.bo.DirectLineChatbot
+import com.example.directline_chatbot_sdk.bo.MessageReceivedNew
 import kotlinx.android.synthetic.main.bottom_sheet.*
 import kotlinx.android.synthetic.main.bottom_sheet.view.*
 import java.text.SimpleDateFormat
 import java.util.*
+import kotlin.collections.ArrayList
+import com.example.directline_chatbot_sdk.bo.Button as Button1
+
 
 class CustomBottomSheetDialogFragment : DialogFragment(), DialogInterface.OnDismissListener {
 
@@ -82,7 +83,7 @@ class CustomBottomSheetDialogFragment : DialogFragment(), DialogInterface.OnDism
     private fun setupTextWatcher(view: View) {
         view.edittext_chatbox.addTextChangedListener(object : TextWatcher {
             override fun onTextChanged(cs: CharSequence, s: Int, b: Int, c: Int) {
-                if(tts.isSpeaking){
+                if (tts.isSpeaking) {
                     tts.stop()
                 }
                 Log.i("Key:", cs.toString())
@@ -237,14 +238,24 @@ class CustomBottomSheetDialogFragment : DialogFragment(), DialogInterface.OnDism
                 }
             }
 
-            override fun onMessageReceived(message: String) {
+            override fun onMessageReceived(messageReceived: MessageReceivedNew) {
+                val message = messageReceived.activities[0].text
+                var buttonList:List<Button1> = listOf()
+               if(messageReceived.activities[0].attachments !=null && messageReceived.activities[0].attachments.isNotEmpty())
+               {
+                    buttonList = messageReceived.activities[0].attachments[0].content.buttons
+               }
+
                 if (message.isNotEmpty()) {
                     if (tts.isSpeaking) {
                         tts.stop()
                         val botMessage = "Sorry didn't understand"
-                        addBotMessage(botMessage)
+                        addBotMessage(botMessage, buttonList)
                     } else {
-                        addBotMessage(message)
+                        addBotMessage(message, buttonList)
+                        /*if(buttonList.isNotEmpty()){
+                            updateButtonList(buttonList)
+                        }*/
                     }
                 }
             }
@@ -265,6 +276,42 @@ class CustomBottomSheetDialogFragment : DialogFragment(), DialogInterface.OnDism
 
     }
 
+    private fun updateButtonList(buttonList: List<Button1>) {
+        // creating the button
+        for (i in buttonList) {
+            val myButton = Button(requireContext())
+            myButton.text = i.title
+            frameLayout = getBotLayout()
+
+            //val ll = view?.findViewById<View>(R.id.bu) as LinearLayout
+            /*    val lp = ViewGroup.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT,
+                    ViewGroup.LayoutParams.WRAP_CONTENT,
+                )*/
+
+            val lp = LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT,
+                    ViewGroup.LayoutParams.WRAP_CONTENT
+                )
+            )
+            lp.bottomMargin = 15
+            lp.gravity = View.TEXT_ALIGNMENT_CENTER
+            myButton.setBackgroundColor(Color.LTGRAY)
+            myButton.setTextColor(Color.BLACK)
+            myButton.background = resources.getDrawable(R.drawable.button_background, null)
+            myButton.setOnClickListener {
+                Toast.makeText(requireContext(), "you selected ${i.title}", Toast.LENGTH_LONG)
+                    .show()
+                sendTextMessage(userMessage = i.title)
+                edittext_chatbox.text = i.title.toEditable()
+            }
+             chat_layout?.addView(myButton, lp)
+
+        }
+
+    }
+
     private fun sendVoiceMessage(userMessage: String) {
         chatbot.user = "Abhinav"
         chatbot.debug = true
@@ -274,7 +321,11 @@ class CustomBottomSheetDialogFragment : DialogFragment(), DialogInterface.OnDism
                 chatbot.send(userMessage)
             }
 
-            override fun onMessageReceived(message: String) {
+            override fun onMessageReceived(messageReceived: MessageReceivedNew) {
+
+//                    val buttonList = messageReceived.activities[0].attachments[0].content.buttons
+                val message = messageReceived.activities[0].text
+
                 if (message.isNotEmpty()) {
                     if (tts.isSpeaking) {
                         tts.stop()
@@ -301,13 +352,22 @@ class CustomBottomSheetDialogFragment : DialogFragment(), DialogInterface.OnDism
 
     }
 
-    private fun addBotMessage(botMessage: String) {
+    private fun addBotMessage(
+        botMessage: String,
+        buttonList: List<com.example.directline_chatbot_sdk.bo.Button>
+    ) {
         if (botMessage == "Hello and welcome!") {
             // tts.speak("", TextToSpeech.QUEUE_ADD, null, "")
         } else {
             activity?.runOnUiThread(Runnable {
 
                 showTextView(botMessage, BOT, date.toString())
+                if (buttonList.isNotEmpty()) {
+                    updateButtonList(buttonList)
+                }
+                else{
+                    Log.d(TAG, "addBotMessage: list empty")
+                }
             })
             edittext_chatbox.text = "".toEditable()
 

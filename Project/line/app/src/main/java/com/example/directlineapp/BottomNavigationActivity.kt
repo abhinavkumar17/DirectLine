@@ -70,7 +70,7 @@ class BottomNavigationActivity : AppCompatActivity() {
     }
 
     private val micClickListener = View.OnClickListener {
-       CustomBottomSheetDialogFragment.newInstance("hi","Welcome").show(supportFragmentManager,"TAG")
+       CustomBottomSheetDialogFragment.newInstance("What is sync up pets","Welcome").show(supportFragmentManager,"TAG")
     }
 
 
