@@ -29,7 +29,6 @@ class SpeechRecognizerViewModel(application: Application) : AndroidViewModel(app
 
     private var viewState: MutableLiveData<ViewState>? = null
 
-    //var botResponseLiveData: LiveData<Activity> = MutableLiveData()
 
     private val speechRecognizer: SpeechRecognizer =
         createSpeechRecognizer(application.applicationContext).apply {
