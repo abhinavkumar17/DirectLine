@@ -38,7 +38,7 @@ import java.util.*
 
 class CustomBottomSheetDialogFragment : DialogFragment(), DialogInterface.OnDismissListener {
 
-    private val TAG = "CustomBottomSheetDialogFragment"
+    private val TAG = "/ testCustomBottomSheetDialogFragment"
     val chatbot =
         DirectLineChatbot("hSNvCahpROY.hQTSFq26wnc31Oj4i6h4SrpRxCJq65g46Nf71eu8z1Q")
     lateinit var tts: TextToSpeech
