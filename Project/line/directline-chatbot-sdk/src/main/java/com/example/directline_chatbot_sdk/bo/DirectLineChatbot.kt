@@ -24,7 +24,8 @@ class DirectLineChatbot(val secret: String)
          * Gets called every time a message *from the bot* has been received
          * @message: the text message from the chatbot
          */
-        fun onMessageReceived(message: String)
+        //fun onMessageReceived(message: String, buttonList: List<Button>?)
+        fun onMessageReceived(messageReceived: MessageReceivedNew)
 
         fun onError(ex: Exception?)
     }
@@ -150,9 +151,12 @@ class DirectLineChatbot(val secret: String)
             override fun onMessage(message: String?)
             {
                 log("MESSAGE RECEIVED : $message")
-                val messageReceived = GSON.fromJson(message, MessageReceived::class.java)
+                val messageReceived = GSON.fromJson(message, MessageReceivedNew::class.java)
+
                 messageReceived?.watermark?.let {
-                    callback?.onMessageReceived(messageReceived.activities[0].text)
+                    //val buttonList = messageReceived.activities[0].attachments[0].content.buttons
+                   // callback?.onMessageReceived(messageReceived.activities[0].text,buttonList)
+                   callback?.onMessageReceived(messageReceived)
                 }
             }
 

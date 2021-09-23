@@ -3,8 +3,8 @@ package com.example.directlineapp
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
+import com.example.directline_chatbot_sdk.bo.Button
 import com.example.directline_chatbot_sdk.bo.DirectLineChatbot
-import java.lang.Error
 import java.lang.Exception
 
 class MainActivity : AppCompatActivity() {
@@ -13,14 +13,14 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
         val chatbot = DirectLineChatbot("0yBj8sJVI-M.I5KNG4i8azR9TSnxKD7XPoX0JrKPV1QcyuN9qmINUCo")
-       // chatbot.debug(true)
+        // chatbot.debug(true)
         //chatbot.user("David Fournier")
 
 
         chatbot.user = "Abhinav"
         chatbot.debug = true
 
-        chatbot.start(callback = object : DirectLineChatbot.Callback
+        /* chatbot.start(callback = object : DirectLineChatbot.Callback
         {
             override fun onStarted()
             {
@@ -29,7 +29,7 @@ class MainActivity : AppCompatActivity() {
                 chatbot.send("safe zone")
             }
 
-            override fun onMessageReceived(message: String)
+            override fun onMessageReceived(message: String, buttonList: List<Button>)
             {
                 Log.d("CHATBOT", message)
             }
@@ -38,7 +38,7 @@ class MainActivity : AppCompatActivity() {
                 Log.d("CHATBOT", ex.toString())
             }
         })
+    }*/
     }
-
 
 }
