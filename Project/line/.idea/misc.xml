@@ -3,29 +3,16 @@
   <component name="DesignSurface">
     <option name="filePathToZoomLevelMap">
       <map>
-        <entry key="..\:/Users/bhale/AndroidStudioProjects/DirectLine/Project/line/app/src/main/res/drawable/bg_bottom_sheet_dialog_fragment.xml" value="0.24444444444444444" />
-        <entry key="..\:/Users/bhale/AndroidStudioProjects/DirectLine/Project/line/app/src/main/res/drawable/bot_chat.xml" value="0.24444444444444444" />
+        <entry key="..\:/Users/bhale/AndroidStudioProjects/DirectLine/Project/line/app/src/main/res/drawable/button_background.xml" value="0.13333333333333333" />
+        <entry key="..\:/Users/bhale/AndroidStudioProjects/DirectLine/Project/line/app/src/main/res/drawable/edittext_background.xml" value="0.11822916666666666" />
         <entry key="..\:/Users/bhale/AndroidStudioProjects/DirectLine/Project/line/app/src/main/res/drawable/ic_baseline_stop_24.xml" value="0.25416666666666665" />
-        <entry key="..\:/Users/bhale/AndroidStudioProjects/DirectLine/Project/line/app/src/main/res/drawable/user_chat.xml" value="0.24444444444444444" />
         <entry key="..\:/Users/bhale/AndroidStudioProjects/DirectLine/Project/line/app/src/main/res/layout/activity_bootom_navigation.xml" value="0.14583333333333334" />
         <entry key="..\:/Users/bhale/AndroidStudioProjects/DirectLine/Project/line/app/src/main/res/layout/activity_main.xml" value="0.17300724637681159" />
-        <entry key="..\:/Users/bhale/AndroidStudioProjects/DirectLine/Project/line/app/src/main/res/layout/bot_message_bot.xml" value="0.21784420289855072" />
-        <entry key="..\:/Users/bhale/AndroidStudioProjects/DirectLine/Project/line/app/src/main/res/layout/bottom_sheet_dialog_layout.xml" value="0.21784420289855072" />
-        <entry key="..\:/Users/bhale/AndroidStudioProjects/DirectLine/Project/line/app/src/main/res/layout/fragment_dashboard.xml" value="0.23802083333333332" />
+        <entry key="..\:/Users/bhale/AndroidStudioProjects/DirectLine/Project/line/app/src/main/res/layout/bot_message_box.xml" value="0.2028985507246377" />
+        <entry key="..\:/Users/bhale/AndroidStudioProjects/DirectLine/Project/line/app/src/main/res/layout/bottom_sheet.xml" value="0.2028985507246377" />
         <entry key="..\:/Users/bhale/AndroidStudioProjects/DirectLine/Project/line/app/src/main/res/layout/fragment_home.xml" value="0.14583333333333334" />
-        <entry key="..\:/Users/bhale/AndroidStudioProjects/DirectLine/Project/line/app/src/main/res/layout/fragment_notifications.xml" value="0.23802083333333332" />
-        <entry key="..\:/Users/bhale/AndroidStudioProjects/DirectLine/Project/line/app/src/main/res/layout/user_message_bot.xml" value="0.21784420289855072" />
+        <entry key="..\:/Users/bhale/AndroidStudioProjects/DirectLine/Project/line/app/src/main/res/layout/user_message_box.xml" value="0.2028985507246377" />
         <entry key="..\:/Users/bhale/AndroidStudioProjects/DirectLine/Project/line/app/src/main/res/xml/network_security_config.xml" value="0.1" />
-        <entry key="..\:/chatbot/azure/sdk/DirectLine/DirectLine/Project/line/app/src/main/res/drawable/bottom_sheet.xml" value="0.24010416666666667" />
-        <entry key="..\:/chatbot/azure/sdk/DirectLine/DirectLine/Project/line/app/src/main/res/drawable/chat_baackground.xml" value="0.1" />
-        <entry key="..\:/chatbot/azure/sdk/DirectLine/DirectLine/Project/line/app/src/main/res/drawable/edittext_background.xml" value="0.1" />
-        <entry key="..\:/chatbot/azure/sdk/DirectLine/DirectLine/Project/line/app/src/main/res/drawable/ic_message.xml" value="0.1" />
-        <entry key="..\:/chatbot/azure/sdk/DirectLine/DirectLine/Project/line/app/src/main/res/drawable/ic_mic.xml" value="0.1" />
-        <entry key="..\:/chatbot/azure/sdk/DirectLine/DirectLine/Project/line/app/src/main/res/drawable/ic_send.xml" value="0.1" />
-        <entry key="..\:/chatbot/azure/sdk/DirectLine/DirectLine/Project/line/app/src/main/res/layout/activity_bootom_navigation.xml" value="0.1" />
-        <entry key="..\:/chatbot/azure/sdk/DirectLine/DirectLine/Project/line/app/src/main/res/layout/bot_message_box.xml" value="0.13489583333333333" />
-        <entry key="..\:/chatbot/azure/sdk/DirectLine/DirectLine/Project/line/app/src/main/res/layout/bottom_sheet.xml" value="0.13489583333333333" />
-        <entry key="..\:/chatbot/azure/sdk/DirectLine/DirectLine/Project/line/app/src/main/res/layout/user_message_box.xml" value="0.13489583333333333" />
         <entry key="..\:/chatbot/azure/sdk/Project/line/app/src/main/res/layout/activity_main.xml" value="0.1859375" />
       </map>
     </option>
