@@ -98,7 +98,7 @@
                 android:paddingTop="10dp"
                 android:paddingBottom="10dp"
                 android:textColor="@color/black"
-                android:textColorHint="@color/pink200"
+                android:textColorHint="@color/chartGrey"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toStartOf="@+id/send_button_text"
                 app:layout_constraintHorizontal_bias="1.0"

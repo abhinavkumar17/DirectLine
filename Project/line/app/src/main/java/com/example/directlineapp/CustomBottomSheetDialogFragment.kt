@@ -306,8 +306,8 @@ class CustomBottomSheetDialogFragment : DialogFragment(), DialogInterface.OnDism
             myButton.setTextColor(Color.BLACK)
             myButton.background = resources.getDrawable(R.drawable.button_background, null)
             myButton.setOnClickListener {
-                Toast.makeText(requireContext(), "you selected ${i.title}", Toast.LENGTH_LONG)
-                    .show()
+                /*Toast.makeText(requireContext(), "you selected ${i.title}", Toast.LENGTH_LONG)
+                    .show()*/
                 sendTextMessage(userMessage = i.title)
                 edittext_chatbox.text = i.title.toEditable()
             }
