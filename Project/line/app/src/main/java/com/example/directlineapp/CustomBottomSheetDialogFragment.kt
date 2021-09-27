@@ -29,11 +29,16 @@ import androidx.core.content.ContextCompat
 import androidx.fragment.app.DialogFragment
 import com.example.directline_chatbot_sdk.bo.DirectLineChatbot
 import com.example.directline_chatbot_sdk.bo.MessageReceivedNew
+import kotlinx.android.synthetic.main.bot_message_box.*
 import kotlinx.android.synthetic.main.bottom_sheet.*
 import kotlinx.android.synthetic.main.bottom_sheet.view.*
 import java.text.SimpleDateFormat
 import java.util.*
 import com.example.directline_chatbot_sdk.bo.Button as Button1
+import android.speech.tts.Voice
+
+
+
 
 
 class CustomBottomSheetDialogFragment : DialogFragment(), DialogInterface.OnDismissListener {
@@ -275,6 +280,7 @@ class CustomBottomSheetDialogFragment : DialogFragment(), DialogInterface.OnDism
     private fun updateButtonList(buttonList: List<Button1>) {
         // creating the button
         for (i in buttonList) {
+
             val myButton = Button(requireContext())
             myButton.text = i.title
             frameLayout = getBotLayout()
@@ -287,11 +293,14 @@ class CustomBottomSheetDialogFragment : DialogFragment(), DialogInterface.OnDism
 
             val lp = LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams(
-                    ViewGroup.LayoutParams.MATCH_PARENT,
+                    ViewGroup.LayoutParams.WRAP_CONTENT,
                     ViewGroup.LayoutParams.WRAP_CONTENT
                 )
             )
             lp.bottomMargin = 15
+            lp.leftMargin = 5
+            lp.rightMargin = 5
+            lp.topMargin = 5
             lp.gravity = View.TEXT_ALIGNMENT_CENTER
             myButton.setBackgroundColor(Color.LTGRAY)
             myButton.setTextColor(Color.BLACK)
@@ -302,7 +311,8 @@ class CustomBottomSheetDialogFragment : DialogFragment(), DialogInterface.OnDism
                 sendTextMessage(userMessage = i.title)
                 edittext_chatbox.text = i.title.toEditable()
             }
-             chat_layout?.addView(myButton, lp)
+            button_layout?.addView(myButton, lp)
+
 
         }
 
@@ -384,7 +394,11 @@ class CustomBottomSheetDialogFragment : DialogFragment(), DialogInterface.OnDism
         wave_three.visibility = View.GONE
         tts = TextToSpeech(requireContext()) {
             if (it == TextToSpeech.SUCCESS) {
+                val voiceobj = Voice(
+                    "en-us-x-sfg male_2-local", Locale.US, 1, 1, true,null)
+                tts.voice = voiceobj
                 tts.language = Locale.US
+                tts.voice
                 tts.setPitch(1.5F)
                 if (message == "Hello and welcome!") {
                     // tts.speak("", TextToSpeech.QUEUE_ADD, null, "")
@@ -399,11 +413,12 @@ class CustomBottomSheetDialogFragment : DialogFragment(), DialogInterface.OnDism
 
             override fun onDone(p0: String?) {
                 Log.d(TAG, "onDone:$p0")
-                activity?.runOnUiThread(Runnable {
+                activity?.runOnUiThread {
                     //on main thread
-                   if(buttonList.isNotEmpty()){
+                    if (buttonList.isNotEmpty()) {
                         updateButtonList(buttonList)
-                    }                })
+                    }
+                }
 
                 Handler(Looper.getMainLooper()).post {
                     startRecording()
