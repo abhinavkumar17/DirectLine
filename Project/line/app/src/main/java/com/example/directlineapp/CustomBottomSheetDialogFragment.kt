@@ -297,10 +297,10 @@ class CustomBottomSheetDialogFragment : DialogFragment(), DialogInterface.OnDism
                     ViewGroup.LayoutParams.WRAP_CONTENT
                 )
             )
-            lp.bottomMargin = 15
-            lp.leftMargin = 5
-            lp.rightMargin = 5
-            lp.topMargin = 5
+            lp.bottomMargin = 2
+            lp.leftMargin = 2
+            lp.rightMargin = 1
+            lp.topMargin = 2
             lp.gravity = View.TEXT_ALIGNMENT_CENTER
             myButton.setBackgroundColor(Color.LTGRAY)
             myButton.setTextColor(Color.BLACK)
